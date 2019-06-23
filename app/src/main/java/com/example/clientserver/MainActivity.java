@@ -1,20 +1,16 @@
 package com.example.clientserver;
 
-import android.Manifest;
 import android.arch.lifecycle.Observer;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-
+import android.widget.Toast;
 import androidx.work.Data;
 import androidx.work.NetworkType;
 import com.example.clientserver.Work.GetTokenWorker;
@@ -42,19 +38,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         intent = new Intent(this, UserDetailsActivity.class);
-//        onRequestPermissionResult();
+        userNameEditText = findViewById(R.id.edit_text);
         getUserName();
 
     }
 
     public void onButtonClick(View view) {
-        if(tokenData!=null){
+        if (userNameEditText.getText().length() == 0) {
+            Toast.makeText(this, "Whoops, missing username", Toast.LENGTH_SHORT).show();
+        } else if (tokenData != null) {
             startActivity(intent);
         }
     }
 
     private void getUserName() {
-        userNameEditText = findViewById(R.id.edit_text);
+
         userNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -68,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(s.length()!=0){
+                if (s.length() != 0) {
                     getToken(userNameEditText.getText().toString());
                 }
 
@@ -86,31 +84,22 @@ public class MainActivity extends AppCompatActivity {
         WorkManager.getInstance().enqueue(checkConnectivityWork);
         WorkManager.getInstance().getWorkInfosByTagLiveData(workTagUniqueId.toString())
                 .observe(this, new Observer<List<WorkInfo>>() {
-            @Override
-            public void onChanged(@Nullable List<WorkInfo> workInfos) {
-                if (workInfos == null || workInfos.isEmpty()){
-                    return;
-                }
-                WorkInfo info = workInfos.get(0);
-                String tokenAsJson = info.getOutputData().getString(KEY_OUTPUT_TOKEN);
-                TokenResponse token = new Gson().fromJson(tokenAsJson, TokenResponse.class);
-                if(token != null){
-                    tokenData = token.data;
-                    intent.putExtra(TOKEN, tokenData);
-                }
-            }
-        });
+                    @Override
+                    public void onChanged(@Nullable List<WorkInfo> workInfos) {
+                        if (workInfos == null || workInfos.isEmpty()) {
+                            return;
+                        }
+                        WorkInfo info = workInfos.get(0);
+                        String tokenAsJson = info.getOutputData().getString(KEY_OUTPUT_TOKEN);
+                        TokenResponse token = new Gson().fromJson(tokenAsJson, TokenResponse.class);
+                        if (token != null) {
+                            tokenData = token.data;
+                            intent.putExtra(TOKEN, tokenData);
+                        }
+                    }
+                });
     }
 
-//    public void onRequestPermissionResult() {
-//        int PERMISSION_ALL = 1;
-//
-//        String[] permissions = {Manifest.permission.INTERNET};
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, permissions, PERMISSION_ALL);
-//        }
-//
-//    }
 
 
 }

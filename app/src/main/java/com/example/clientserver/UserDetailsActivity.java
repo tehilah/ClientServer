@@ -6,18 +6,16 @@ import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.Selection;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.example.clientserver.Work.GetUserWorker;
 import com.example.clientserver.Work.SetImageUrlWorker;
@@ -26,7 +24,6 @@ import com.example.clientserver.data.SetUserImageUrlRequest;
 import com.example.clientserver.data.SetUserPrettyNameRequest;
 import com.example.clientserver.data.UserResponse;
 import com.google.gson.Gson;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -48,13 +45,14 @@ public class UserDetailsActivity extends AppCompatActivity implements PopupMenu.
 
 
     private String tokenData;
-    EditText prettyName;
-    TextView userName;
-    TextView welcomeText;
-    ImageView imageView;
-    Button editButton;
-    Button saveButton;
-    Context context;
+    private EditText prettyName;
+    private TextView userName;
+    private TextView welcomeText;
+    private ImageView imageView;
+    private Button editButton;
+    private Button saveButton;
+    private Context context;
+    private ProgressBar pgsBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +67,7 @@ public class UserDetailsActivity extends AppCompatActivity implements PopupMenu.
         imageView = findViewById(R.id.image);
         editButton = findViewById(R.id.edit_button);
         saveButton = findViewById(R.id.save_button);
+        pgsBar = findViewById(R.id.pBar);
         context = this;
         getUser();
 
@@ -96,16 +95,21 @@ public class UserDetailsActivity extends AppCompatActivity implements PopupMenu.
 
                         UserResponse userResponse = new Gson().fromJson(userAsJson, UserResponse.class);
                         if (userResponse != null) {
-                            userName.append(userResponse.data.username);
+                            Log.d("TAG", "onChanged: "+ userResponse.data.username+" "+userResponse.data.pretty_name+" "+userResponse.data.image_url);
+                            userName.setText(userResponse.data.username);
                             prettyName.setText(userResponse.data.pretty_name);
                             Glide.with(context).load("http://hujipostpc2019.pythonanywhere.com"
                                     + userResponse.data.image_url).into(imageView);
                             if(userResponse.data.pretty_name != null && !userResponse.data.pretty_name.equals("")){
-                                welcomeText.setText("Welcome "+userResponse.data.pretty_name);
+                                welcomeText.append(userResponse.data.pretty_name);
+                                Log.d("TAG", "onChanged: here");
                             }
                             else{
-                                welcomeText.setText("Welcome "+userResponse.data.username);
+                                welcomeText.append(userResponse.data.username);
                             }
+                            Log.d("TAG", "onChanged: before progress bar");
+                            pgsBar.setVisibility(View.GONE);
+                            Log.d("TAG", "onChanged: After pBar");
                         }
                     }
 
