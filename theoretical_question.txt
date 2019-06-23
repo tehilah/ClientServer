@@ -1,0 +1,10 @@
+1 pro and 1 con for each implementation:
+
+save the token locally: 
+pro: by saving the token locally we dont need to call the server each time a user logs in and that saves time.
+con: we need to use up a lot of space in memory to save the tokens for each user. 
+
+use this token only in this current app-launch, and re-request a token from the server each time the app launches again:
+pro: we dont need to use up any memory to find the token.
+con: takes time to call the server and request the token.
+
